@@ -17,6 +17,9 @@
 package com.codecool;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class WordChecker {
 	/**
@@ -26,7 +29,6 @@ public class WordChecker {
    * @see WordList
    */
     char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-    int pointer = 0;
 	WordList wordList;
 
 	public WordChecker(WordList wordList) {
@@ -54,85 +56,108 @@ public class WordChecker {
    * @param word String to check against
    * @return A list of plausible matches
    */
-	public ArrayList<String> getSuggestions(String word) {
-	    ArrayList<String> suggestions = new ArrayList<>();
+	public Set<String> getSuggestions(String word) {
+	    Set<String> suggestions = new TreeSet<>();
 
-        while(this.pointer < word.length()-1) {
-            String swapped = swapAdjacentPairOfChars(word);
-            if(wordExists(swapped)) {
-                suggestions.add(swapped);
-            }
-            this.pointer++;
-        }
-        pointerToZero();
-
-        for(int i = 0; i < word.length(); i++) {
-            String afterInsertion;
-            for(Character character: alphabet) {
-                afterInsertion = insertFromAToZ(word, character, i);
-                if(wordExists(afterInsertion) && !suggestions.contains(afterInsertion)) {
-                    suggestions.add(afterInsertion);
-                }
-            }
-        }
-        for(int j = 0; j < word.length(); j++) {
-            String afterDeletion = removeCharByChar(word, j);
-            if(wordExists(afterDeletion) && !suggestions.contains(afterDeletion)) {
-                suggestions.add(afterDeletion);
-            }
-        }
-        for(int k = 0; k < word.length(); k++) {
-            String afterReplace;
-            for(Character character: alphabet) {
-                afterReplace = replaceCharacter(word, character, k);
-                if(wordExists(afterReplace)) {
-                    suggestions.add(afterReplace);
-                }
-            }
-        }
+        suggestions.addAll(splitWordCharacterByCharacter(word));
+        suggestions.addAll(swapAdjacentPairOfChars(word));
+        suggestions.addAll(insertFromAToZ(word));
+        suggestions.addAll(replaceCharacter(word));
+        suggestions.addAll(removeCharByChar(word));
 
 		return suggestions;
 	}
 
-    private String replaceCharacter(String word, char character, int index) {
+	private List<String> splitWordCharacterByCharacter(String word) {
+        List<String> existingWords = new ArrayList<>();
+	    for(int i = 1; i < word.length(); i++) {
+            String first = word.substring(0, i);
+            String second = word.substring(i);
+            if(wordExists(first) && wordExists(second)) {
+                existingWords.add(first);
+                existingWords.add(second);
+            }
+        }
+        return existingWords;
+    }
+
+    private List<String> replaceCharacter(String word) {
 	    char[] charArray = word.toCharArray();
-	    charArray[index] = Character.toUpperCase(character);
+	    List<String> existingWords = new ArrayList<>();
 
-	    return new String(charArray);
-    }
-
-	private String removeCharByChar(String word, int index) {
-        return word.substring(0, index) + word.substring(index + 1);
-    }
-
-    private String insertFromAToZ(String word, char character, int index) {
-	    char letterFromAlphabet = Character.toUpperCase(character);
-        String afterInsert;
-
-        if(index == 0) {
-            afterInsert = letterFromAlphabet + word;
-        } else if(index == word.length() - 1) {
-            afterInsert = word + letterFromAlphabet;
-            pointerToZero();
-        } else {
-            String beforeIndex =  word.substring(0, index);
-            String indexToEnd = word.substring(index);
-            afterInsert = beforeIndex + letterFromAlphabet + indexToEnd;
+        for(int k = 0; k < word.length(); k++) {
+            for(int i = 0; i < alphabet.length; i++) {
+                charArray[k] = Character.toUpperCase(alphabet[i]);
+                String afterReplace = new String(charArray);
+                if(wordExists(afterReplace)) {
+                    existingWords.add(afterReplace);
+                }
+            }
         }
-        return afterInsert;
+	    return existingWords;
     }
 
-	private String swapAdjacentPairOfChars(String word) {
-	    char[] charactersArray = word.toCharArray();
-	    if(charactersArray.length > 1) {
-            char pointed = charactersArray[this.pointer];
-            charactersArray[this.pointer] = charactersArray[this.pointer + 1];
-            charactersArray[this.pointer + 1] = pointed;
+	private List<String> removeCharByChar(String word) {
+	    List<String> existingWords = new ArrayList<>();
+	    StringBuilder afterDeletion = new StringBuilder();
+
+        for(int j = 0; j < word.length(); j++) {
+            afterDeletion.append(word.substring(0, j));
+            afterDeletion.append(j+1);
+            if(wordExists(afterDeletion.toString()) && !existingWords.contains(afterDeletion)) {
+                existingWords.add(afterDeletion.toString());
+            }
         }
-        return new String(charactersArray);
+        return existingWords;
     }
 
-    private void pointerToZero() {
-	    this.pointer = 0;
+    private List<String> insertFromAToZ(String word) {
+	    List<String> existingWords = new ArrayList<>();
+        StringBuilder afterInsert = new StringBuilder();
+        String beforeIndex;
+        String indexToEnd;
+
+        for(int i = 0; i < word.length(); i++) {
+            for(int index = 0; index < alphabet.length; index++) {
+                if(index == 0) {
+                    afterInsert.append(Character.toUpperCase(alphabet[index]));
+                    afterInsert.append(word);
+                } else if(index == word.length() - 1) {
+                    afterInsert.append(word);
+                    afterInsert.append(Character.toUpperCase(alphabet[index]));
+                } else {
+                    beforeIndex =  word.substring(0, i);
+                    indexToEnd = word.substring(i);
+                    afterInsert.append(beforeIndex);
+                    afterInsert.append(Character.toUpperCase(alphabet[index]));
+                    afterInsert.append(indexToEnd);
+                }
+                if(wordExists(afterInsert.toString()) && !existingWords.contains(afterInsert)) {
+                    existingWords.add(afterInsert.toString());
+                }
+                afterInsert = new StringBuilder();
+            }
+        }
+        return existingWords;
+    }
+
+	private List<String> swapAdjacentPairOfChars(String word) {
+	    List<String> existingWords = new ArrayList<>();
+	    String swapped;
+	    char[] charactersArray = new char[]{};
+
+        for(int i = 0; i < word.length()-1; i++) {
+	        if(word.length() > 1) {
+	            charactersArray = word.toCharArray();
+                char pointed = charactersArray[i];
+                charactersArray[i] = charactersArray[i + 1];
+                charactersArray[i + 1] = pointed;
+            }
+            swapped = new String(charactersArray);
+            if(wordExists(swapped)) {
+                existingWords.add(swapped);
+            }
+        }
+        return existingWords;
     }
 }
