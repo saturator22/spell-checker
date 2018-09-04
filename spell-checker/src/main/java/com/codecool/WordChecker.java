@@ -74,19 +74,19 @@ public class WordChecker {
             String first = word.substring(0, i);
             String second = word.substring(i);
             if(wordExists(first) && wordExists(second)) {
-                existingWords.add(first);
-                existingWords.add(second);
+                existingWords.add(first + " " + second);
+//                existingWords.add(second);
             }
         }
         return existingWords;
     }
 
     private List<String> replaceCharacter(String word) {
-	    char[] charArray = word.toCharArray();
 	    List<String> existingWords = new ArrayList<>();
 
         for(int k = 0; k < word.length(); k++) {
             for(int i = 0; i < alphabet.length; i++) {
+	            char[] charArray = word.toCharArray();
                 charArray[k] = Character.toUpperCase(alphabet[i]);
                 String afterReplace = new String(charArray);
                 if(wordExists(afterReplace)) {
@@ -102,11 +102,12 @@ public class WordChecker {
 	    StringBuilder afterDeletion = new StringBuilder();
 
         for(int j = 0; j < word.length(); j++) {
-            afterDeletion.append(word.substring(0, j));
-            afterDeletion.append(j+1);
+            afterDeletion.append(word.substring(0, j) + word.substring(j+1));
+//            afterDeletion.append(j+1);
             if(wordExists(afterDeletion.toString()) && !existingWords.contains(afterDeletion)) {
                 existingWords.add(afterDeletion.toString());
             }
+            afterDeletion = new StringBuilder();
         }
         return existingWords;
     }
@@ -119,18 +120,15 @@ public class WordChecker {
 
         for(int i = 0; i < word.length(); i++) {
             for(int index = 0; index < alphabet.length; index++) {
-                if(index == 0) {
-                    afterInsert.append(Character.toUpperCase(alphabet[index]));
-                    afterInsert.append(word);
+                if(i == 0) {
+                    afterInsert.append(Character.toUpperCase(alphabet[index]) + word);
                 } else if(index == word.length() - 1) {
-                    afterInsert.append(word);
-                    afterInsert.append(Character.toUpperCase(alphabet[index]));
+                    afterInsert.append(word + Character.toUpperCase(alphabet[index]));
                 } else {
                     beforeIndex =  word.substring(0, i);
                     indexToEnd = word.substring(i);
-                    afterInsert.append(beforeIndex);
-                    afterInsert.append(Character.toUpperCase(alphabet[index]));
-                    afterInsert.append(indexToEnd);
+                    afterInsert.append(String.format(beforeIndex +
+                            Character.toUpperCase(alphabet[index]) + indexToEnd));
                 }
                 if(wordExists(afterInsert.toString()) && !existingWords.contains(afterInsert)) {
                     existingWords.add(afterInsert.toString());
