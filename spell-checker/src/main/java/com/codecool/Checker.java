@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 
 public class Checker {
     public Checker() {
@@ -21,7 +19,7 @@ public class Checker {
         label34:
         for(WordChecker var9 = new WordChecker(var5); var7 != null; var8 = new WordLineReader(var7)) {
             while(true) {
-                ArrayList var11;
+                Set var11;
                 do {
                     String var10;
                     do {
@@ -39,7 +37,6 @@ public class Checker {
                     var4.println("     word not found: " + var10);
                 } while(var11.size() <= 0);
 
-                Collections.sort(var11);
                 var4.println("  perhaps you meant: ");
                 Iterator var12 = var11.iterator();
 
